@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UsersController extends Controller
 {
@@ -14,7 +15,9 @@ class UsersController extends Controller
      */
     public function index()
     {
-        //
+        $user = Auth::guard('sanctum')->user();
+
+        return(User::all());
     }
 
     /**
@@ -25,7 +28,18 @@ class UsersController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $user = Auth::guard('sanctum')->user();
+
+        $user = new User();
+        $user->fill($request->toArray());
+        $user->password = bcrypt(request('password'));
+
+        $user->save();
+        // $user->attachRole($request->role);
+
+        //$token = $user->createToken('ApiAuth')->plainTextToken;
+        //['token' => $token],
+        return($user);
     }
 
     /**
@@ -36,7 +50,18 @@ class UsersController extends Controller
      */
     public function show(User $user)
     {
-        //
+        $user = Auth::guard('sanctum')->user();
+
+        $user = User::find($user);
+        if($user === null)
+        {
+            return $this->sendError('Empty or does not exist.');
+        }
+        else
+        {
+            return $this->sendResponse(['user' => $user], 'User has been successfully pulled');
+
+        }
     }
 
     /**
@@ -48,7 +73,12 @@ class UsersController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        //
+        $user = Auth::guard('sanctum')->user();
+        
+        $user->fill($request->toArray());
+        $user->save();
+
+        return($user);
     }
 
     /**
@@ -59,6 +89,10 @@ class UsersController extends Controller
      */
     public function destroy(User $user)
     {
-        //
+        $user = Auth::guard('sanctum')->user();
+
+        User::destroy($user->id);
+
+        return('Successfully deleted.');
     }
 }
